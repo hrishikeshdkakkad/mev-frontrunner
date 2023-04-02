@@ -39,12 +39,9 @@ exports.__esModule = true;
 var ethers_1 = require("ethers");
 var abi = require("./abi.json");
 var axios_1 = require("axios");
-var ethereum_input_data_decoder_1 = require("ethereum-input-data-decoder");
-var erc_1 = require("../test/erc");
 var wssUrl = "ws://127.0.0.1:8545/";
 var router = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 var interfaceI = new ethers_1.ethers.utils.Interface(abi);
-var decoder = new ethereum_input_data_decoder_1["default"](erc_1.ercAbi);
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         var provider, test;
@@ -57,7 +54,7 @@ function main() {
                 case 1:
                     test = _a.sent();
                     provider.on("pending", function (tx) { return __awaiter(_this, void 0, void 0, function () {
-                        var txnData, result;
+                        var txnData, decoded;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -65,15 +62,11 @@ function main() {
                                     return [4 /*yield*/, provider.getTransaction(tx)];
                                 case 1:
                                     txnData = _a.sent();
-                                    console.log(txnData, "txnData");
-                                    if (!(txnData && txnData.to && txnData.to === router)) return [3 /*break*/, 3];
-                                    result = decoder.decodeData(txnData.data);
-                                    console.log(result, "result");
-                                    return [4 /*yield*/, logTxn(txnData)];
-                                case 2:
-                                    _a.sent();
-                                    _a.label = 3;
-                                case 3: return [2 /*return*/];
+                                    if (txnData && txnData.to) {
+                                        decoded = interfaceI.decodeFunctionData("execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline)", txnData.data);
+                                        console.log(decoded, "td");
+                                    }
+                                    return [2 /*return*/];
                             }
                         });
                     }); });

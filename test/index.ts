@@ -15,18 +15,12 @@ describe("SwapSol", function () {
       UniswapV2RouterLocal,
       SwapRouterAddress
     );
-    // const simpleSwap = await simpleSwapFactory.deploy(simpleSwapFactory);
-    // await simpleSwap.deployed();
     let signers = await ethers.getSigners();
-
-    /* Connect to WETH and wrap some eth  */
     const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi, signers[0]);
     const deposit = await WETH.deposit({
       value: ethers.utils.parseEther("1"),
     });
     await deposit.wait();
-
-    /* Check Initial DAI Balance */
     const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, signers[0]);
     const expandedDAIBalanceBefore = await DAI.balanceOf(signers[0].address);
     const DAIBalanceBefore = Number(
@@ -53,15 +47,12 @@ describe("SwapSol", function () {
         }
       );
     const swap2 = await swap.wait();
-    console.log(swap2, "swap");
 
     const expandedDAIBalanceAfter = await DAI.balanceOf(signers[0].address);
 
     const DAIBalanceAfter = Number(
       ethers.utils.formatUnits(expandedDAIBalanceAfter, DAI_DECIMALS)
     );
-
-    console.log("DAI Balance After: ", DAIBalanceAfter);
 
     expect(DAIBalanceAfter).is.greaterThan(DAIBalanceBefore);
   });

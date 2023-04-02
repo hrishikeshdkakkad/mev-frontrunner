@@ -1,15 +1,14 @@
 import { ethers } from "ethers";
 import * as abi from "./abi.json";
 import axios from "axios";
-import InputDataDecoder from "ethereum-input-data-decoder";
 import { ercAbi } from "../test/erc";
+import * as IUniswapV2Router02 from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 
 const wssUrl = "ws://127.0.0.1:8545/";
 const router = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 
 const interfaceI = new ethers.utils.Interface(abi);
 
-const decoder = new InputDataDecoder(ercAbi);
 
 async function main() {
   const provider = new ethers.providers.WebSocketProvider(wssUrl);
@@ -18,11 +17,9 @@ async function main() {
   provider.on("pending", async (tx) => {
     console.log(tx, "tx");
     const txnData = await provider.getTransaction(tx);
-    console.log(txnData, "txnData");
-    if (txnData && txnData.to && txnData.to === router) {
-      const result = decoder.decodeData(txnData.data);
-      console.log(result, "result");
-      await logTxn(txnData);
+    if (txnData && txnData.to)  {
+      let decoded = interfaceI.decodeFunctionData("execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline)", txnData.data)
+      console.log(decoded, "td")
     }
   });
 }
