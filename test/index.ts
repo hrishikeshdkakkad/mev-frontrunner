@@ -10,7 +10,6 @@ describe("SwapSol", function () {
   const DAI_DECIMALS = 18;
 
   it("Should provide a caller with more DAI than they started with after a swap", async function () {
-    /* Deploy the SimpleSwap contract */
     const simpleSwapFactory = await ethers.getContractAt(
       UniswapV2RouterLocal,
       SwapRouterAddress

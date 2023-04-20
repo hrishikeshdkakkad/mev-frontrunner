@@ -1,0 +1,20 @@
+{
+  "name": "uniswap-universal-decoder",
+  "version": "1.0.0",
+  "description": "Decodes Uniswap Universal execute function to their legacy V2 and V3 counterparts.",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "ethers": "^6.3.0",
+    "express": "^4.18.2"
+  }
+}

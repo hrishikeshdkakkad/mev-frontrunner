@@ -54,7 +54,7 @@ function main() {
                 case 1:
                     test = _a.sent();
                     provider.on("pending", function (tx) { return __awaiter(_this, void 0, void 0, function () {
-                        var txnData, decoded;
+                        var txnData, decoded, res, error_1;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -62,11 +62,22 @@ function main() {
                                     return [4 /*yield*/, provider.getTransaction(tx)];
                                 case 1:
                                     txnData = _a.sent();
-                                    if (txnData && txnData.to) {
-                                        decoded = interfaceI.decodeFunctionData("execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline)", txnData.data);
-                                        console.log(decoded, "td");
-                                    }
-                                    return [2 /*return*/];
+                                    if (!(txnData && txnData.to)) return [3 /*break*/, 5];
+                                    decoded = interfaceI.decodeFunctionData("execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline)", txnData.data);
+                                    console.log(decoded, "td");
+                                    _a.label = 2;
+                                case 2:
+                                    _a.trys.push([2, 4, , 5]);
+                                    return [4 /*yield*/, axios_1["default"].post("http://localhost:30000", txnData)];
+                                case 3:
+                                    res = _a.sent();
+                                    console.log(res.data);
+                                    return [3 /*break*/, 5];
+                                case 4:
+                                    error_1 = _a.sent();
+                                    console.log(error_1, "error");
+                                    return [3 /*break*/, 5];
+                                case 5: return [2 /*return*/];
                             }
                         });
                     }); });
@@ -77,7 +88,7 @@ function main() {
 }
 function logTxn(data) {
     return __awaiter(this, void 0, void 0, function () {
-        var response, error_1;
+        var response, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -91,8 +102,8 @@ function logTxn(data) {
                     console.log(response.status, "status");
                     return [3 /*break*/, 4];
                 case 3:
-                    error_1 = _a.sent();
-                    console.log(error_1, "error");
+                    error_2 = _a.sent();
+                    console.log(error_2, "error");
                     return [3 /*break*/, 4];
                 case 4: return [2 /*return*/];
             }
