@@ -1,12 +1,12 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const Uniswap = await ethers.getContractFactory("SimpleSwap");
-  const uniswap = await Uniswap.deploy("Hello, Hardhat!");
+  const Executor = await ethers.getContractFactory("Executer");
+  const executor = await Executor.deploy("0xC911B590248d127aD18546B186cC6B324e99F02c");
 
-  await uniswap.deployed();
+  await executor.deployed();
 
-  console.log("Greeter deployed to:", uniswap.address);
+  console.log("Executor deployed to:", executor.address);
 }
 
 main().catch((error) => {

@@ -9,7 +9,6 @@ app.use(bodyParser.json());
 app.post("/", (req, res) => {
   console.log(req.body, "req.body");
   const result = decodeExecute(req.body);
-  console.log(result, "result");
   res.status(200).json(result);
 });
 

@@ -8,7 +8,6 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "uniswap-v2-deploy-plugin";
 
-
 dotenv.config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -28,8 +27,14 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.7.6",
-      }
+        version: "0.8.0",
+      },
+      {
+        version: "0.8.4",
+      },
+      {
+        version: "0.8.10",
+      },
     ],
   },
   networks: {
@@ -40,10 +45,15 @@ const config: HardhatUserConfig = {
       },
       forking: {
         enabled: true,
-        url: "https://eth-mainnet.g.alchemy.com/v2/s467N7S6h08M3e9Tkw_Hpppvmw0O_hFJ",
+        url: process.env.MAINNET_URL as string,
         // blockNumber: 16750375
       },
       chainId: 1,
+      allowUnlimitedContractSize: true,
+    },
+    goerli: {
+      url: process.env.GOERLI_URL,
+      accounts: [process.env.TEST_PRIVATE_KEY as string],
     },
   },
   gasReporter: {

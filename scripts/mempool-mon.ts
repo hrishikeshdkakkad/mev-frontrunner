@@ -47,4 +47,29 @@ async function logTxn(data: ethers.providers.TransactionResponse) {
   }
 }
 
+interface IDecoded {
+  function: "V3_SWAP_EXACT_IN";
+  recipient: string;
+  amountIn: string;
+  amountOut: string;
+  path: string[];
+  payerIsUser: boolean;
+}
+
+function decoded(input: IDecoded) {
+  // Todo
+  // Example
+  // {
+  //   function: 'V3_SWAP_EXACT_IN',
+  //   recipient: '0x0000000000000000000000000000000000000001',
+  //   amountIn: '1000000000000000000',
+  //   amountOut: '1788079921085547922193',
+  //   path: [
+  //     '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  //     '0x6b175474e89094c44da98b954eedeac495271d0f'
+  //   ],
+  //   payerIsUser: false
+  // }
+}
+
 main();
