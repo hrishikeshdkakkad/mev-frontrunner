@@ -24,7 +24,7 @@ async function main() {
       console.log(decoded, "td");
       try {
         const res = await axios.post("http://localhost:30000", txnData);
-        console.log(res.data);
+        const decodedResult = decoder(res.data);
       } catch (error) {
         console.log(error, "error");
       }
@@ -56,7 +56,8 @@ interface IDecoded {
   payerIsUser: boolean;
 }
 
-function decoded(input: IDecoded) {
+function decoder(input: IDecoded) {
+  console.log(input, "input");
   // Todo
   // Example
   // {

@@ -46,7 +46,7 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: true,
         url: process.env.MAINNET_URL as string,
-        // blockNumber: 16750375
+        blockNumber: 16750375
       },
       chainId: 1,
       allowUnlimitedContractSize: true,
