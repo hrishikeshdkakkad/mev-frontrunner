@@ -14,7 +14,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+        while (_) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -37,14 +37,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var ethers_1 = require("ethers");
-var abi = require("./abi.json");
 var axios_1 = require("axios");
 var v3_sdk_1 = require("@uniswap/v3-sdk");
-// import { JSBI } from 'jsbi';
 var jsbi_1 = require("jsbi");
+var socket_io_1 = require("socket.io");
 var wssUrl = "ws://127.0.0.1:8545/";
 var router = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
-var interfaceI = new ethers_1.ethers.utils.Interface(abi);
+// const interfaceI = new ethers.utils.Interface(abi);
+var io = new socket_io_1.Server(3070);
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         var provider, test;
@@ -57,7 +57,7 @@ function main() {
                 case 1:
                     test = _a.sent();
                     provider.on("pending", function (tx) { return __awaiter(_this, void 0, void 0, function () {
-                        var txnData, decoded, res, decodedResult, error_1;
+                        var txnData, res, decodedResult, error_1;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -65,50 +65,28 @@ function main() {
                                     return [4 /*yield*/, provider.getTransaction(tx)];
                                 case 1:
                                     txnData = _a.sent();
-                                    if (!(txnData && txnData.to)) return [3 /*break*/, 5];
-                                    decoded = interfaceI.decodeFunctionData("execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline)", txnData.data);
-                                    console.log(decoded, "td");
+                                    if (!(txnData && txnData.to)) return [3 /*break*/, 6];
                                     _a.label = 2;
                                 case 2:
-                                    _a.trys.push([2, 4, , 5]);
-                                    return [4 /*yield*/, axios_1["default"].post("http://localhost:30000", txnData)];
+                                    _a.trys.push([2, 5, , 6]);
+                                    return [4 /*yield*/, axios_1["default"].post("http://localhost:30000", txnData.data)];
                                 case 3:
                                     res = _a.sent();
-                                    decodedResult = decoder(res.data);
-                                    return [3 /*break*/, 5];
+                                    return [4 /*yield*/, decoder(res.data)];
                                 case 4:
+                                    decodedResult = _a.sent();
+                                    io.sockets.emit("decoded", decodedResult);
+                                    console.log(decodedResult, "dR");
+                                    return [3 /*break*/, 6];
+                                case 5:
                                     error_1 = _a.sent();
                                     console.log(error_1, "error");
-                                    return [3 /*break*/, 5];
-                                case 5: return [2 /*return*/];
+                                    return [3 /*break*/, 6];
+                                case 6: return [2 /*return*/];
                             }
                         });
                     }); });
                     return [2 /*return*/];
-            }
-        });
-    });
-}
-function logTxn(data) {
-    return __awaiter(this, void 0, void 0, function () {
-        var response, error_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    console.log("Posting to Webhook: ", data.hash);
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, axios_1["default"].post("https://eoi339avn311ljh.m.pipedream.net", data)];
-                case 2:
-                    response = _a.sent();
-                    console.log(response.status, "status");
-                    return [3 /*break*/, 4];
-                case 3:
-                    error_2 = _a.sent();
-                    console.log(error_2, "error");
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
             }
         });
     });
@@ -119,32 +97,32 @@ function priceFromTick(baseToken, quoteToken, inputAmount, currentTick, baseToke
         return __generator(this, function (_a) {
             sqrtRationX96 = v3_sdk_1.TickMath.getSqrtRatioAtTick(currentTick);
             ratioX192 = jsbi_1["default"].multiply(sqrtRationX96, sqrtRationX96);
-            baseAmount = jsbi_1["default"].BigInt(inputAmount * (Math.pow(10, baseTokenDecimals)));
+            baseAmount = jsbi_1["default"].BigInt(inputAmount * Math.pow(10, baseTokenDecimals));
             shift = jsbi_1["default"].leftShift(jsbi_1["default"].BigInt(1), jsbi_1["default"].BigInt(192));
             quoteAmount = v3_sdk_1.FullMath.mulDivRoundingUp(ratioX192, baseAmount, shift);
-            finalAmount = Number(quoteAmount.toString()) / (Math.pow(10, quoteTokenDecimals));
-            console.log(finalAmount);
+            finalAmount = Number(quoteAmount.toString()) / Math.pow(10, quoteTokenDecimals);
             return [2 /*return*/, finalAmount];
         });
     });
 }
 function decoder(input) {
     return __awaiter(this, void 0, void 0, function () {
-        var finalAmout;
+        var result, amountOutput, amountInput, finalAmout, slippage;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    // console.log(input, "input");
-                    console.log((parseInt(input.amountIn) / Math.pow(10, 6)), "Amount In");
-                    // console.log((parseInt(input.amountOut)/10**18),"Amount Out")
-                    console.log(input.path[0], "Token - 0");
-                    console.log(input.path[1], "Token - 1");
-                    return [4 /*yield*/, priceFromTick(input.path[0], input.path[1], (parseInt(input.amountIn) / Math.pow(10, 6)), 201160, 6, 18)];
+                    result = {};
+                    amountOutput = parseInt(input.amountOut) / Math.pow(10, 18);
+                    amountInput = parseInt(input.amountIn) / Math.pow(10, 6);
+                    return [4 /*yield*/, priceFromTick(input.path[0], input.path[1], amountInput, 201160, 6, 18)];
                 case 1:
                     finalAmout = _a.sent();
-                    console.log((parseInt(input.amountOut) / Math.pow(10, 18)), "Amount Out");
-                    console.log(finalAmout, "final Amount");
-                    return [2 /*return*/];
+                    slippage = ((finalAmout - amountOutput) / amountOutput) * 100;
+                    result["finalAmout"] = finalAmout;
+                    result["amountOutput"] = amountOutput;
+                    result["amountInput"] = amountInput;
+                    result["slippage"] = slippage;
+                    return [2 /*return*/, result];
             }
         });
     });

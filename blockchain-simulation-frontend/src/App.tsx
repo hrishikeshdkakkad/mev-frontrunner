@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { io, Socket } from 'socket.io-client';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const SOCKET_URL = 'ws://localhost:3070'; // Replace with your server URL
+
+interface EventDataType {
+  // Define the structure of your event data here
+  // For example:
+  id: number;
+  message: string;
 }
 
-export default App;
+const SocketEvents: React.FC = () => {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [events, setEvents] = useState<EventDataType[]>([]);
+
+  useEffect(() => {
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
+
+    newSocket.on('decoded', (eventData: EventDataType) => {
+      console.log("In here deccc")
+      setEvents((prevEvents) => [...prevEvents, eventData]);
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  return (
+    <div>
+      <h2>Received Events:</h2>
+      <ul>
+        {events.map((event, index) => (
+          <li key={index}>{JSON.stringify(event)}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default SocketEvents;
