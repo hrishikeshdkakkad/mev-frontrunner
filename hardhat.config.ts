@@ -23,6 +23,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+console.log(process.env.MAINNET_URL, "process.env.MAINNET_URL")
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -40,13 +42,13 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       mining: {
-        auto: false,
+        auto: true,
         interval: 10000,
       },
       forking: {
         enabled: true,
         url: process.env.MAINNET_URL as string,
-        blockNumber: 16750375
+        // blockNumber: 17120665
       },
       chainId: 1,
       allowUnlimitedContractSize: true,
