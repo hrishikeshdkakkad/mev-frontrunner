@@ -49,10 +49,10 @@ const router = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 const server = http.createServer();
 
 const io = new Server(server, {
-  cors: {
+  cors:{
     origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
+    methods: ['GET', 'POST']
+  }
 });
 
 const port = 3070;
