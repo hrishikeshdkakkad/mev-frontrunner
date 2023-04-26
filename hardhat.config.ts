@@ -43,7 +43,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       mining: {
         auto: true,
-        interval: 10000,
+        // interval: 10000,
       },
       forking: {
         enabled: true,
