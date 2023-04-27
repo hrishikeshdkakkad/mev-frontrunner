@@ -1,5 +1,4 @@
 import { ethers, providers } from "ethers";
-// import * as abi from "./abi.json";
 import axios from "axios";
 
 import { TickMath, FullMath } from "@uniswap/v3-sdk";
@@ -43,16 +42,13 @@ const getAbi = (address: string): string => {
 
 const wssUrl = "ws://127.0.0.1:8545/";
 const router = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
-
-// const interfaceI = new ethers.utils.Interface(abi);
-
 const server = http.createServer();
 
 const io = new Server(server, {
-  cors:{
+  cors: {
     origin: "http://localhost:3000",
-    methods: ['GET', 'POST']
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 const port = 3070;
@@ -62,34 +58,21 @@ server.listen(port, () => {
 
 async function main() {
   const provider = new ethers.providers.WebSocketProvider(wssUrl);
-  const test = await provider.send("eth_pendingTransactions");
+  await provider.send("eth_pendingTransactions");
   provider.on("pending", async (tx) => {
-    // console.log(tx, "tx");
     const txnData = await provider.getTransaction(tx);
     if (txnData && txnData.to) {
       try {
         const res = await axios.post("http://localhost:30000", txnData);
-        // console.log(res, "res")
         const decodedResult = await decoder(res.data, provider);
+        decodedResult['txn'] = txnData
+        console.log(decodedResult, "decodedResult");
         io.sockets.emit("decoded", decodedResult);
       } catch (error) {
         console.log(error, "error");
       }
     }
   });
-}
-
-async function logTxn(data: ethers.providers.TransactionResponse) {
-  console.log("Posting to Webhook: ", data.hash);
-  try {
-    const response = await axios.post(
-      "https://eoi339avn311ljh.m.pipedream.net",
-      data
-    );
-    console.log(response.status, "status");
-  } catch (error) {
-    console.log(error, "error");
-  }
 }
 
 interface IDecoded {
@@ -152,7 +135,6 @@ async function pooldynamics(
   const poolContract = new ethers.Contract(poolAddress, PoolABI, provider);
   const slot0 = await poolContract.slot0();
   const sqrtPriceX96 = slot0.sqrtPriceX96;
-  // console.log("the tick is", slot0.tick);34er
   const token0 = await poolContract.token0();
   const token1 = await poolContract.token1();
   const token0IsInput = tokenIn == token0;
@@ -163,8 +145,6 @@ async function pooldynamics(
   const decimalsIn = await tokenInContract.decimals();
   const decimalOut = await tokenOutContract.decimals();
   const quoter = new ethers.Contract(QUOTER2_ADDRESS, QuoterV2ABI, provider);
-  // const etherAmount = ethers.utils.formatEther(amountIn);
-  // console.log("The ether amount",etherAmount)
   const params = {
     tokenIn: tokenIn,
     tokenOut: tokenOut,
@@ -172,19 +152,15 @@ async function pooldynamics(
     amountIn: amountIn,
     sqrtPriceLimitX96: "0",
   };
-  result['originalNoInterferenceTransaction'] = params;
+  result["originalNoInterferenceTransaction"] = params;
 
   const quote = await quoter.callStatic.quoteExactInputSingle(params);
-  const sqrtPriceX96After = quote.sqrtPriceX96After;
   const outputAmount = quote.amountOut.toString() / 10 ** decimalOut;
-  const expectedAmount = parseInt(amountOut)/ 10 ** decimalOut
-  // console.log("The expected output", expectedAmount)
-  // console.log("the outputAmount", outputAmount);
-  result['originalExpectedOutput'] = expectedAmount
-  result['originalNoInterferenceTransactionOutput'] = outputAmount
+  const expectedAmount = parseInt(amountOut) / 10 ** decimalOut;
+  result["originalExpectedOutput"] = expectedAmount;
+  result["originalNoInterferenceTransactionOutput"] = outputAmount;
   const slippage = ((outputAmount - expectedAmount) / expectedAmount) * 100;
-  // console.log("the slippage is ",slippage.toFixed(3),"%")
-  result['originalSlippage'] = slippage
+  result["originalSlippage"] = slippage;
   const new_params = {
     tokenIn: tokenIn,
     tokenOut: tokenOut,
@@ -192,71 +168,23 @@ async function pooldynamics(
     amountIn: amountIn.mul(1000),
     sqrtPriceLimitX96: "0",
   };
-  result['frontrun'] = new_params;
+  result["frontrun"] = new_params;
   const new_quote = await quoter.callStatic.quoteExactInputSingle(new_params);
-  const new_sqrtPriceX96After = new_quote.sqrtPriceX96After;
   let new_outputAmount = new_quote.amountOut.toString() / 10 ** decimalOut;
-  new_outputAmount = new_outputAmount/1000
-  // console.log("the outputAmount new", new_outputAmount);
-  result['originalTransactionwithInterferenceOutput'] = new_outputAmount
-  // console.log("The maximum extractable value is",outputAmount - new_outputAmount)
-  result['MEV'] = outputAmount - new_outputAmount
-  // const pricebefore = sqrtToPrice(
-  //   sqrtPriceX96,
-  //   decimalsIn,
-  //   decimalOut,
-  //   token0IsInput
-  // );
-  // const priceAfter = sqrtToPrice(
-  //   sqrtPriceX96After,
-  //   decimalsIn,
-  //   decimalOut,
-  //   token0IsInput
-  // );
-  // console.log("pricebefore", pricebefore);
-  // console.log("Price After", priceAfter);
+  new_outputAmount = new_outputAmount / 1000;
+  result["originalTransactionwithInterferenceOutput"] = new_outputAmount;
+  result["MEV"] = outputAmount - new_outputAmount;
   const absoluteChange = outputAmount - new_outputAmount;
-  const percentageChange = (absoluteChange / outputAmount)*100;
-  result['frontrunnable'] = percentageChange < slippage ? true : false
-  // console.log("Percentage Change", (percentageChange).toFixed(3), "%");
-  result['PriceImact'] = percentageChange
-  // if(percentageChange < slippage){
-  //   // console.log("percentageChange",percentageChange)
-  //   // console.log("slippage",slippage)
-  //   console.log("Front running successful")
-  // }
-  // else{
-  //   console.log("The FrontRunning is not possible")
-  // }
-  return result
+  const percentageChange = (absoluteChange / outputAmount) * 100;
+  result["frontrunnable"] = percentageChange < slippage ? true : false;
+  result["PriceImact"] = percentageChange;
+  return result;
 }
 
 async function decoder(
   input: IDecoded,
   provider: ethers.providers.WebSocketProvider
 ) {
-  // console.log(input, "input");
-  const result: any = {};
-  // const amountOutput = parseInt(input.amountOut) / 10 ** 18;
-  // const amountInput = parseInt(input.amountIn) / 10 ** 6;
-  // console.log(amountInput, "Amount In");
-  // // console.log((parseInt(input.amountOut)/10**18),"Amount Out")
-  // // console.log(input.path[0],"Token - 0")
-  // // console.log(input.path[1],"Token - 1")
-  // const finalAmout = await priceFromTick(
-  //   input.path[0],
-  //   input.path[1],
-  //   amountInput,
-  //   201160,
-  //   6,
-  //   18
-  // );
-  // const slippage = ((finalAmout - amountOutput) / amountOutput) * 100;
-  // console.log(amountOutput, "Amount Out");
-  // console.log(finalAmout, "Final Output");
-  // console.log(finalAmout - amountOutput, "Difference");
-  // console.log(slippage, "The slippage");
-  // console.log("The calculation of Pool Dynamics Begins");
   const outputParams = await pooldynamics(
     input.path[0],
     input.path[1],
@@ -265,15 +193,8 @@ async function decoder(
     input.amountOut,
     provider
   );
-  console.log("output pramas",outputParams)
-  
-  // console.log("Finished Calculating Pool dynamics");
-  // result["finalAmout"] = finalAmout;
-  // result["amountOutput"] = amountOutput;
-  // result["amountInput"] = amountInput;
-  // result["slippage"] = slippage;
 
-  return result;
+  return outputParams;
 }
 
 main();
