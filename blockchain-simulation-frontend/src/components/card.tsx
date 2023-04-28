@@ -139,6 +139,7 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
                 3
               )}{" "}
               <br />
+              Original Slippage: {dataItem.originalSlippage.toFixed(3)}%{" "}
             </Typography>
           ) : txType === 1 ? (
             <Typography variant="body2" color="text.secondary">
