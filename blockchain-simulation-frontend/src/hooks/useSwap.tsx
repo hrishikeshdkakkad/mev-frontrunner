@@ -43,16 +43,20 @@ const useSwap = () => {
   const swap = async (amount: number) => {
     if (!routerContract)
       throw new Error("Router contract has not been initialized");
-    // await deposit(amount);
-    // await approve(ROUTER_ADDRESS, amount);
+    await deposit(amount);
+    await approve(ROUTER_ADDRESS, amount);
     const immutables = await getPoolImmutables();
 
     console.log(immutables, "immutables");
+
+    console.log(amount, "amountssssss")
 
     const parsedAmount = ethers.utils.parseUnits(
       amount.toString(),
       UNI_DECIMALS
     );
+
+    console.log(parsedAmount, "parsedAmount")
 
     const params = {
       tokenIn: immutables.token1,
@@ -61,9 +65,11 @@ const useSwap = () => {
       recipient: address,
       deadline: Math.floor(Date.now() / 1000) + 60 * 10,
       amountIn: parsedAmount,
-      amountOutMinimum: 0,
+      amountOutMinimum: 10,
       sqrtPriceLimitX96: 0,
     };
+
+    console.log(params, "params")
 
     try {
       const txn = await routerContract.exactInputSingle(params, {

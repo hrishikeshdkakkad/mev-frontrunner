@@ -1,28 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { WagmiConfig, createClient, configureChains, mainnet, goerli } from "wagmi";
+import { WagmiConfig, createClient, configureChains, mainnet } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { ErrorBoundary } from "./error/error-boundary";
-import { alchemyProvider } from 'wagmi/providers/alchemy'
-import { InjectedConnector } from 'wagmi/connectors/injected'
-
+import { ProSidebarProvider } from "react-pro-sidebar";
+import { Router } from "./router";
+import { BrowserRouter } from "react-router-dom";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [goerli],
-  [alchemyProvider({ apiKey: 'z0dHy4TIGZmxxZ01ax_pIg88YL61mAnb' }), publicProvider()]
+  [mainnet],
+  [publicProvider()]
 );
 
 const client = createClient({
   autoConnect: true,
   provider,
-  connectors: [new InjectedConnector({ chains })],
   webSocketProvider,
 });
 
@@ -30,7 +28,11 @@ root.render(
   <React.StrictMode>
     <WagmiConfig client={client}>
       <ErrorBoundary>
-        <App />
+        <ProSidebarProvider>
+          <BrowserRouter>
+            <Router />
+          </BrowserRouter>
+        </ProSidebarProvider>
       </ErrorBoundary>
     </WagmiConfig>
   </React.StrictMode>

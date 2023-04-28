@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as React from "react";
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
@@ -12,7 +13,6 @@ import { green, red } from "@mui/material/colors";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Button } from "@mui/material";
-import { DataItem } from "./Tabs";
 import {
   useAccount,
   useBalance,
@@ -20,12 +20,8 @@ import {
   useSigner,
   useWaitForTransaction,
 } from "wagmi";
-import useSwap from "./hooks/useSwap";
-
-const tokenMappings: any = {
-  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "ETH",
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": "USDC",
-};
+import useSwap from "../hooks/useSwap";
+import { DataItem } from "../interfaces/IDataItem";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -51,11 +47,11 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 const UNI_ADDRESS = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
 
 export default function CardComponent({ dataItem, swap, txType }: CardProps) {
-  const [expanded, setExpanded] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(true);
   const [txHash, setTxHash] = React.useState("");
   const { status, error, data } = useWaitForTransaction();
   const provider = useProvider();
-  const { data: signer } = useSigner()
+  const { data: signer } = useSigner();
 
   const { address } = useAccount();
   const { data: ETHBalance } = useBalance({
@@ -72,8 +68,8 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
 
   const onClickSwapButton = async () => {
     const amount = dataItem.originalNoInterferenceTransaction.amountIn.hex;
-    console.log(Number(amount)/Math.pow(10,18), "amount");
-    const txn = await uniswap(11);
+    console.log(Number(amount) / Math.pow(10, 18), "amount");
+    const txn = await uniswap(20);
     setTxHash(txn.hash);
     await txn.wait();
   };
@@ -114,12 +110,14 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
               <MoreVertIcon />
             </IconButton>
           }
-          title={dataItem.frontrunnable ? "Frontrunnable" : "Not frontrunnable"}
+          title={dataItem.frontrunnable ? "Frontrunnable" : "Not Frontrunnable"}
           subheader={
             txType === 2
-              ? `Original Expected Output: ${dataItem.originalExpectedOutput}`
+              ? `Original No Interference Output: ${dataItem.originalNoInterferenceTransactionOutput.toFixed(
+                  3
+                )}`
               : txType === 1
-              ? `FR interference o/p: ${dataItem.originalTransactionwithInterferenceOutput}`
+              ? `Price Impact: ${dataItem.PriceImact.toFixed(3)} %`
               : txType === 3
               ? `Backrun Output: To be added`
               : null
@@ -128,30 +126,34 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
         <CardContent>
           {txType === 2 ? (
             <Typography variant="body2" color="text.secondary">
-              Token In:{" "}
-              {
-                tokenMappings[
-                  dataItem.originalNoInterferenceTransaction.tokenIn
-                ]
-              }{" "}
+              Token In: {dataItem.tokenIn} <br />
+              Token Out: {dataItem.tokenOut} <br />
+              Amount In:{" "}
+              {Number(dataItem.originalNoInterferenceTransaction.amountIn.hex) /
+                Math.pow(10, dataItem.decimalsIn)}{" "}
               <br />
-              Token Out:{" "}
-              {
-                tokenMappings[
-                  dataItem.originalNoInterferenceTransaction.tokenOut
-                ]
-              }{" "}
+              Original Expected Output : $
+              {dataItem.originalExpectedOutput.toFixed(3)}
               <br />
-              {/* Amount In:{" "}
-            {dataItem.originalNoInterferenceTransaction.amountIn.hex
-              ? web3.utils
-                  .toBN(dataItem.originalNoInterferenceTransaction.amountIn.hex)
-                  .toNumber()
-              : null} */}
+              Output After Interference: $
+              {dataItem.originalTransactionwithInterferenceOutput.toFixed(
+                3
+              )}{" "}
+              <br />
             </Typography>
           ) : txType === 1 ? (
             <Typography variant="body2" color="text.secondary">
-              {/* Frontrun Tx: {dataItem.originalTransactionwithInterference} */}
+              Token In: {dataItem.frontrun.inputCurrency} <br />
+              Token Out: {dataItem.frontrun.outputCurrency} <br />
+              Amount In:{" "}
+              {(Number(
+                dataItem.originalNoInterferenceTransaction.amountIn.hex
+              ) *
+                dataItem.frontrunInput) /
+                Math.pow(10, dataItem.decimalsIn)}{" "}
+              <br />
+              Actual Output : ${dataItem.frontrunOutput.toFixed(3)}
+              <br />
             </Typography>
           ) : txType === 3 ? (
             <Typography variant="body2" color="text.secondary">
@@ -159,20 +161,23 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
             </Typography>
           ) : null}
         </CardContent>
-        <CardActions disableSpacing>
-          <ExpandMore
-            expand={expanded}
-            onClick={handleExpandClick}
-            aria-expanded={expanded}
-            aria-label="show more"
-          >
-            <ExpandMoreIcon />
-          </ExpandMore>
-        </CardActions>
+        {swap ? (
+          <CardActions disableSpacing>
+            <ExpandMore
+              expand={expanded}
+              onClick={handleExpandClick}
+              aria-expanded={expanded}
+              aria-label="show more"
+            >
+              <ExpandMoreIcon />
+            </ExpandMore>
+          </CardActions>
+        ) : null}
         {swap ? (
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <CardContent>
               <Button
+                defaultChecked={true}
                 disabled={address ? false : true}
                 onClick={onClickSwapButton}
                 fullWidth

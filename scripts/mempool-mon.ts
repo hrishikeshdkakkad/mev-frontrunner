@@ -1,7 +1,7 @@
 import { ethers, providers } from "ethers";
 import axios from "axios";
 
-import { TickMath, FullMath } from "@uniswap/v3-sdk";
+import { TickMath, FullMath, FACTORY_ADDRESS } from "@uniswap/v3-sdk";
 import { Server } from "socket.io";
 import http from "http";
 import cors from "cors";
@@ -10,23 +10,16 @@ import JSBI from "jsbi";
 import { abi as QuoterV2ABI } from "@uniswap/v3-periphery/artifacts/contracts/lens/QuoterV2.sol/QuoterV2.json";
 import { abi as PoolABI } from "@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json";
 import { abi as FactoryABI } from "@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json";
+import { WETHABI, DAIABI, WBTCABI, USDTABI, ERC20ABI } from "./abis";
+import {
+  WETH_ADDRESS,
+  DAI_ADDRESS,
+  WBTC_ADDRESS,
+  USDT_ADDRESS,
+  QUOTER2_ADDRESS,
+} from "./constants";
 
-const QUOTER2_ADDRESS = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e";
-const FACTORY_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
-
-const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
-const WBTC_ADDRESS = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599";
-const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-const USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-const USDT_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-
-const ERC20ABI = require("./erc20.json");
-const WETHABI = require("./Weth.json");
-const DAIABI = require("./Dai.json");
-const WBTCABI = require("./Wbtc.json");
-const USDTABI = require("./Usdt.json");
-
-const getAbi = (address: string): string => {
+const getAbi = (address: string) => {
   if (address === WETH_ADDRESS) {
     return WETHABI;
   } else if (address === DAI_ADDRESS) {
@@ -37,6 +30,21 @@ const getAbi = (address: string): string => {
     return USDTABI;
   } else {
     return ERC20ABI;
+  }
+};
+
+const getCurrency = (address: string): string => {
+  console.log(address, "Add");
+  if (address === WETH_ADDRESS) {
+    return "ETH";
+  } else if (address === DAI_ADDRESS) {
+    return "DAI";
+  } else if (address === WBTC_ADDRESS) {
+    return "WBTC";
+  } else if (address === USDT_ADDRESS) {
+    return "USDC";
+  } else {
+    return "Currency symbol Not Loaded";
   }
 };
 
@@ -65,8 +73,7 @@ async function main() {
       try {
         const res = await axios.post("http://localhost:30000", txnData);
         const decodedResult = await decoder(res.data, provider);
-        decodedResult['txn'] = txnData
-        console.log(decodedResult, "decodedResult");
+        decodedResult["txn"] = txnData;
         io.sockets.emit("decoded", decodedResult);
       } catch (error) {
         console.log(error, "error");
@@ -84,41 +91,33 @@ interface IDecoded {
   payerIsUser: boolean;
 }
 
-async function priceFromTick(
-  baseToken: string,
-  quoteToken: string,
-  inputAmount: number,
-  currentTick: number,
-  baseTokenDecimals: number,
-  quoteTokenDecimals: number,
-  token0IsInput: any
-): Promise<number> {
-  const sqrtRationX96 = TickMath.getSqrtRatioAtTick(currentTick);
-  const ratioX192 = JSBI.multiply(sqrtRationX96, sqrtRationX96);
-  const baseAmount = JSBI.BigInt(inputAmount * 10 ** baseTokenDecimals);
-  const shift = JSBI.leftShift(JSBI.BigInt(1), JSBI.BigInt(192));
-  const quoteAmount = FullMath.mulDivRoundingUp(ratioX192, baseAmount, shift);
-  let finalAmount = Number(quoteAmount.toString()) / 10 ** quoteTokenDecimals;
-  if (!token0IsInput) {
-    finalAmount = 1 / finalAmount;
-  }
-  return finalAmount;
+async function getPoolAddress(
+  tokenIn: string,
+  tokenOut: string,
+  fee: string,
+  provider: ethers.providers.WebSocketProvider
+) {
+  const factory = new ethers.Contract(FACTORY_ADDRESS, FactoryABI, provider);
+  return await factory.getPool(tokenIn, tokenOut, fee);
 }
-function sqrtToPrice(
-  sqrt: number,
-  decimals0: number,
-  decimals1: number,
-  token0IsInput: boolean
-): number {
-  const numerator = sqrt ** 2;
-  const denominator = 2 ** 198;
-  let ratio = numerator / denominator;
-  const shiftDecimals = 10 ** (decimals0 - decimals1);
-  ratio = ratio * shiftDecimals;
-  if (!token0IsInput) {
-    ratio = 1 / ratio;
-  }
-  return ratio;
+
+async function getDecimalValue(
+  token: string,
+  provider: ethers.providers.WebSocketProvider
+) {
+  const tokenAbi = getAbi(token);
+  const tokenContract = new ethers.Contract(token, tokenAbi, provider);
+  return await tokenContract.decimals();
+}
+
+async function getQuote(
+  params: object,
+  decimalOut: number,
+  quoter: ethers.Contract
+) {
+  const quote = await quoter.callStatic.quoteExactInputSingle(params);
+  const amountOut = quote.amountOut.toString() / 10 ** decimalOut;
+  return amountOut;
 }
 
 async function pooldynamics(
@@ -130,54 +129,62 @@ async function pooldynamics(
   provider: ethers.providers.WebSocketProvider
 ) {
   const result: any = {};
-  const factory = new ethers.Contract(FACTORY_ADDRESS, FactoryABI, provider);
-  const poolAddress = await factory.getPool(tokenIn, tokenOut, fee);
+  const poolAddress = await getPoolAddress(tokenIn, tokenOut, fee, provider);
   const poolContract = new ethers.Contract(poolAddress, PoolABI, provider);
   const slot0 = await poolContract.slot0();
   const sqrtPriceX96 = slot0.sqrtPriceX96;
-  const token0 = await poolContract.token0();
-  const token1 = await poolContract.token1();
-  const token0IsInput = tokenIn == token0;
-  const tokenInAbi = getAbi(tokenIn);
-  const tokenOutAbi = getAbi(tokenOut);
-  const tokenInContract = new ethers.Contract(tokenIn, tokenInAbi, provider);
-  const tokenOutContract = new ethers.Contract(tokenOut, tokenOutAbi, provider);
-  const decimalsIn = await tokenInContract.decimals();
-  const decimalOut = await tokenOutContract.decimals();
-  const quoter = new ethers.Contract(QUOTER2_ADDRESS, QuoterV2ABI, provider);
-  const params = {
-    tokenIn: tokenIn,
-    tokenOut: tokenOut,
-    fee: fee,
-    amountIn: amountIn,
-    sqrtPriceLimitX96: "0",
-  };
-  result["originalNoInterferenceTransaction"] = params;
+  const decimalsIn = await getDecimalValue(tokenIn, provider);
+  const decimalOut = await getDecimalValue(tokenOut, provider);
 
-  const quote = await quoter.callStatic.quoteExactInputSingle(params);
-  const outputAmount = quote.amountOut.toString() / 10 ** decimalOut;
-  const expectedAmount = parseInt(amountOut) / 10 ** decimalOut;
-  result["originalExpectedOutput"] = expectedAmount;
-  result["originalNoInterferenceTransactionOutput"] = outputAmount;
-  const slippage = ((outputAmount - expectedAmount) / expectedAmount) * 100;
-  result["originalSlippage"] = slippage;
-  const new_params = {
-    tokenIn: tokenIn,
-    tokenOut: tokenOut,
-    fee: fee,
-    amountIn: amountIn.mul(1000),
+  result.tokenIn = getCurrency(tokenIn);
+  result.tokenOut = getCurrency(tokenOut);
+  result.decimalsIn = decimalsIn;
+  result.decimalsOut = decimalOut;
+
+  const quoter = new ethers.Contract(QUOTER2_ADDRESS, QuoterV2ABI, provider);
+  const params1 = {
+    tokenIn,
+    tokenOut,
+    fee,
+    amountIn,
     sqrtPriceLimitX96: "0",
   };
-  result["frontrun"] = new_params;
-  const new_quote = await quoter.callStatic.quoteExactInputSingle(new_params);
-  let new_outputAmount = new_quote.amountOut.toString() / 10 ** decimalOut;
-  new_outputAmount = new_outputAmount / 1000;
-  result["originalTransactionwithInterferenceOutput"] = new_outputAmount;
-  result["MEV"] = outputAmount - new_outputAmount;
-  const absoluteChange = outputAmount - new_outputAmount;
+
+  result.originalNoInterferenceTransaction = params1;
+  const outputAmount = await getQuote(params1, decimalOut, quoter);
+  const expectedAmount = parseInt(amountOut) / 10 ** decimalOut;
+  result.originalExpectedOutput = expectedAmount;
+  result.originalNoInterferenceTransactionOutput = outputAmount;
+  const slippage = ((outputAmount - expectedAmount) / expectedAmount) * 100;
+  result.originalSlippage = slippage;
+
+  const frontrunMultiplier = 1000;
+  const params2 = {
+    tokenIn,
+    tokenOut,
+    fee,
+    amountIn: amountIn.mul(frontrunMultiplier),
+    sqrtPriceLimitX96: "0",
+  };
+
+  result.frontrun = {
+    ...params2,
+    inputCurrency: getCurrency(tokenIn),
+    outputCurrency: getCurrency(tokenOut),
+  };
+  const newOutputAmount = await getQuote(params2, decimalOut, quoter);
+  result.frontrunOutput = newOutputAmount;
+  result.frontrunInput = frontrunMultiplier;
+  const originalTransactionwithInterferenceOutput = newOutputAmount / 1000;
+  result.originalTransactionwithInterferenceOutput =
+    originalTransactionwithInterferenceOutput;
+  result.MEV = outputAmount - originalTransactionwithInterferenceOutput;
+  const absoluteChange =
+    outputAmount - originalTransactionwithInterferenceOutput;
   const percentageChange = (absoluteChange / outputAmount) * 100;
-  result["frontrunnable"] = percentageChange < slippage ? true : false;
-  result["PriceImact"] = percentageChange;
+  result.frontrunnable = percentageChange < slippage;
+  result.PriceImact = percentageChange;
+
   return result;
 }
 

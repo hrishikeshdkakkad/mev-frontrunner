@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { io, Socket } from "socket.io-client";
-import VerticalTabs from "./Tabs";
+import React from "react";
+import VerticalTabs from "./components/verticalTabs";
 import Button from "@mui/material/Button";
-import { useAccount, useConnect, Chain } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
-
-interface EventDataType {
-  id: number;
-  message: string;
-}
-
 
 const SocketEvents: React.FC = () => {
   const { connect } = useConnect({
@@ -20,16 +13,27 @@ const SocketEvents: React.FC = () => {
 
   return (
     <div>
-      <div style={{ position: "absolute", top: 0, right: 10, marginBottom: '50' }}>
-          <div>
-            {address ? (
-              <p>{address}</p>
-            ) : (
-              <Button onClick={() => connect()}>Connect wallet</Button>
-            )}
-          </div>
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          padding: "5px",
+          marginBottom: "50",
+          backgroundColor: "ButtonShadow",
+          borderRadius: "10px",
+        }}
+      >
+        <div>
+          {address ? (
+            <p>{address}</p>
+          ) : (
+            <Button style={{ marginTop: "10" }} onClick={() => connect()}>
+              Connect wallet
+            </Button>
+          )}
         </div>
-      <h2>Received Events:</h2>
+      </div>
       <div>
         <div className="left-div">
           <VerticalTabs />

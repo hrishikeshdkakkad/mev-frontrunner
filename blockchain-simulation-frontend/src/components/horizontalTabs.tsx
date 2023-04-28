@@ -5,10 +5,10 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import BasicTable from "./table";
-import { DataItem } from "./Tabs";
 import Card from "./card";
 import CardComponent from "./card";
 import { Typography } from "@mui/material";
+import { DataItem } from "../interfaces/IDataItem";
 
 interface HorizontalTabsProps {
   dataItem: DataItem;
