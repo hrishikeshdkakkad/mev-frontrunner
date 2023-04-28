@@ -80,7 +80,6 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
 
   return (
     <>
-      {console.log(status, "ssssss")}
       {status === "loading" && (
         <Typography variant="body2" color="text.secondary">
           Transaction pending...
@@ -113,7 +112,7 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
           title={dataItem.frontrunnable ? "Frontrunnable" : "Not Frontrunnable"}
           subheader={
             txType === 2
-              ? `Original No Interference Output: ${dataItem.originalNoInterferenceTransactionOutput.toFixed(
+              ? `Original Receivable: $${dataItem.originalNoInterferenceTransactionOutput.toFixed(
                   3
                 )}`
               : txType === 1
@@ -184,6 +183,7 @@ export default function CardComponent({ dataItem, swap, txType }: CardProps) {
               >
                 SWAP
               </Button>
+              {txHash}
             </CardContent>
           </Collapse>
         ) : null}

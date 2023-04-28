@@ -49,14 +49,12 @@ const useSwap = () => {
 
     console.log(immutables, "immutables");
 
-    console.log(amount, "amountssssss")
+    console.log(amount, "amountssssss");
 
     const parsedAmount = ethers.utils.parseUnits(
       amount.toString(),
       UNI_DECIMALS
     );
-
-    console.log(parsedAmount, "parsedAmount")
 
     const params = {
       tokenIn: immutables.token1,
@@ -66,10 +64,10 @@ const useSwap = () => {
       deadline: Math.floor(Date.now() / 1000) + 60 * 10,
       amountIn: parsedAmount,
       amountOutMinimum: 10,
-      sqrtPriceLimitX96: 0,
+      sqrtPriceLimitX96: 5,
     };
 
-    console.log(params, "params")
+    console.log(params, "params");
 
     try {
       const txn = await routerContract.exactInputSingle(params, {
@@ -79,7 +77,7 @@ const useSwap = () => {
       return txn;
     } catch (error) {
       console.log("Swap error", error);
-    }   
+    }
   };
 
   const getQuote = async (amount: number) => {
@@ -109,20 +107,20 @@ const useSwap = () => {
     if (!poolContract) {
       throw new Error("Pool contract has not been initialized");
     }
-  
+
     try {
       const [token0, token1, fee] = await Promise.all([
         poolContract.token0(),
         poolContract.token1(),
         poolContract.fee(),
       ]);
-  
+
       const immutables: Immutables = {
         token0,
         token1,
         fee,
       };
-  
+
       return immutables;
     } catch (error) {
       throw error;

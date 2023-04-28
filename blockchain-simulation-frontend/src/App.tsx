@@ -3,6 +3,7 @@ import VerticalTabs from "./components/verticalTabs";
 import Button from "@mui/material/Button";
 import { useAccount, useConnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
+import { Typography } from "@mui/material";
 
 const SocketEvents: React.FC = () => {
   const { connect } = useConnect({
@@ -35,7 +36,10 @@ const SocketEvents: React.FC = () => {
         </div>
       </div>
       <div>
-        <div className="left-div">
+        <Typography variant="h5" style={{ textAlign: "center" }}>
+          CSE 526LEC DEFI - Frontrunning Simulator
+        </Typography>
+        <div style={{marginTop: "20"}} className="left-div">
           <VerticalTabs />
         </div>
       </div>
