@@ -26,7 +26,7 @@ command:
 inside the **root**, **universal-decoder**, and **blockchain-simulation-frontend** folders
 Start the frontend simulator by running npm start inside the blockchain-simulation-frontend folder.
 * Create a .env file and add your alchemy endpoint as defined in the .env.example file
-* From the root folder -
+* From the root folder run the following command to deploy all the contracts to goreli.
 
 command:
 
