@@ -14,3 +14,10 @@ The project repository is structured as follows:
  *  **scripts:** Contains the deployment scripts, including the deploy.ts script that deploys the contracts to the Goerli network.
  *  **test:** Contains the test files for the contracts, including the decoding calc test that checks the decoding of transaction details.
 
+**Installation**
+
+* Clone the repository to your local machine.
+* Install the dependencies by running npm install inside the root, universal-decoder, and blockchain-simulation-frontend folders.
+*command:
+  npm install
+Start the frontend simulator by running npm start inside the blockchain-simulation-frontend folder.
