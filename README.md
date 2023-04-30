@@ -32,6 +32,7 @@ command:
 
     $npx hardhat scripts/deploy.ts
 * Start your local Hardhat node as well
+
 command:
 
     npx hardhat node --network hardhat
