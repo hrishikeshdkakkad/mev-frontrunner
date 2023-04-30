@@ -18,10 +18,16 @@ The project repository is structured as follows:
 
 * Clone the repository to your local machine.
 * Install the dependencies by running
-* 
+
 command:
 
     npm install
    
 inside the **root**, **universal-decoder**, and **blockchain-simulation-frontend** folders
 Start the frontend simulator by running npm start inside the blockchain-simulation-frontend folder.
+* Create a .env file and add your alchemy endpoint as defined in the .env.example file
+* From the root folder -
+
+command:
+
+    $npx hardhat scripts/deploy.ts
