@@ -35,9 +35,14 @@ command:
 command:
 
     npx hardhat node --network hardhat
-* in a different terminal run the below command to start mempool monitoring scripts
+* In a new terminal run the below command the root folder to start mempool monitoring scripts
 
 command:
 
     ts-node scripts/mempool.ts
+* In a new terminal and run the below command from the root folder to start the universial decode api. 
+*
+command:
+
+    node uniswap-universal-decoder/app.js
 *
