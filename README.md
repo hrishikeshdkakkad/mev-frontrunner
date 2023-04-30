@@ -18,6 +18,6 @@ The project repository is structured as follows:
 
 * Clone the repository to your local machine.
 * Install the dependencies by running npm install inside the root, universal-decoder, and blockchain-simulation-frontend folders.
-*command:
+command:
   npm install
 Start the frontend simulator by running npm start inside the blockchain-simulation-frontend folder.
