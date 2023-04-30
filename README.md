@@ -1,5 +1,7 @@
 **Uniswap Sandwich Attack Simulator**
-Project description goes here.
+
+
+This is a blockchain simulation project that aims to replicate a Uniswap sandwich attack using smart contracts, flashloans, and the Uniswap v3 interface. The project consists of several components, including a decoding infrastructure, a frontend simulator, smart contracts, and deployment scripts.
 
 Folder Structure
 .vscode: Contains VS Code configurations for the project.
