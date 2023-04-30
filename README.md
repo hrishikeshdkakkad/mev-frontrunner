@@ -7,14 +7,14 @@ This is a blockchain simulation project that aims to replicate a Uniswap sandwic
 
 The project repository is structured as follows:
 
-**blockchain-simulation-frontend:** Contains the frontend simulator, which allows users to place and sign a Uniswap transaction and visualize its effects.
+  **blockchain-simulation-frontend:** Contains the frontend simulator, which allows users to place and sign a Uniswap transaction and visualize its effects.
 
-**contracts:** Contains the Solidity smart contracts used in the project, including the flashloan contract, the Uniswap pool contract, and the decoder contract.
+  **contracts:** Contains the Solidity smart contracts used in the project, including the flashloan contract, the Uniswap pool contract, and the decoder contract.
 
-**interface:** Contains the interface files for the contracts, including the IUniswapV3Pool and IFlashLoanReceiver interfaces.
+  **interface:** Contains the interface files for the contracts, including the IUniswapV3Pool and IFlashLoanReceiver interfaces.
 
-**scripts:** Contains the deployment scripts, including the deploy.ts script that deploys the contracts to the Goerli network.
+  **scripts:** Contains the deployment scripts, including the deploy.ts script that deploys the contracts to the Goerli network.
 
-**test:** Contains the test files for the contracts, including the decoding calc test that checks the decoding of transaction details.
+  **test:** Contains the test files for the contracts, including the decoding calc test that checks the decoding of transaction details.
 
-**uniswap-universal-decoder:** Contains the decoding infrastructure, including the mempool watcher script that monitors the Ethereum mempool for transactions and decodes their details.
+  **uniswap-universal-decoder:** Contains the decoding infrastructure, including the mempool watcher script that monitors the Ethereum mempool for transactions and decodes their details.
