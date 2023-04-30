@@ -41,8 +41,14 @@ command:
 
     ts-node scripts/mempool.ts
 * In a new terminal and run the below command from the root folder to start the universial decode api. 
-*
+
 command:
 
     node uniswap-universal-decoder/app.js
-*
+* Make sure you have the front end, local hardhat node, mempool monitoring script, universal decoder script before proceeding to the next step.
+* Now set your meta mask wallet on HardHat
+* Go to the UniSwap interface and place and sign a swap
+* You will see all the information about the transaction on the frontend in real-time
+* Your SETUP is now complete
+
+
