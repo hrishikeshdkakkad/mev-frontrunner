@@ -31,3 +31,12 @@ Start the frontend simulator by running npm start inside the blockchain-simulati
 command:
 
     $npx hardhat scripts/deploy.ts
+* Start your local Hardhat node as well
+command:
+
+    npx hardhat node --network hardhat
+* in a different terminal run the below command to start mempool monitoring scripts
+command:
+
+    ts-node scripts/mempool.ts
+*
