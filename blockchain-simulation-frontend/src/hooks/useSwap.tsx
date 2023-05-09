@@ -5,6 +5,8 @@ import { Token } from "@uniswap/sdk-core";
 import { Pool } from "@uniswap/v3-sdk";
 import ISwapRouterArtifact from "@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json";
 import useWETH from "./useWETH";
+import { ChainId, WETH, Fetcher, Route, Trade, TokenAmount, TradeType, Percent } from '@uniswap/sdk';
+
 
 interface Immutables {
   token0: string;
@@ -51,8 +53,9 @@ const useSwap = () => {
 
     console.log(amount, "amountssssss");
 
+    const amt = 20
     const parsedAmount = ethers.utils.parseUnits(
-      amount.toString(),
+      amt.toString(),
       UNI_DECIMALS
     );
 
@@ -62,9 +65,9 @@ const useSwap = () => {
       fee: immutables.fee,
       recipient: address,
       deadline: Math.floor(Date.now() / 1000) + 60 * 10,
-      amountIn: parsedAmount,
-      amountOutMinimum: 10,
-      sqrtPriceLimitX96: 5,
+      amountIn: 10,
+      amountOutMinimum: 0,
+      sqrtPriceLimitX96: 0,
     };
 
     console.log(params, "params");
@@ -74,6 +77,7 @@ const useSwap = () => {
         gasLimit: ethers.utils.hexlify(700000),
       });
       await txn.wait();
+      console.log(txn, "ttxxnn")
       return txn;
     } catch (error) {
       console.log("Swap error", error);

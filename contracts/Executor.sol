@@ -15,7 +15,7 @@ contract Executer is FlashLoanSimpleReceiverBase {
         IPoolAddressesProvider provider
     ) public FlashLoanSimpleReceiverBase(provider) {}
 
-    function createFlashLoan(address asset, uint amount) external {
+    function createFlashLoan(address asset, uint256 amount) external {
         address reciever = address(this);
         bytes memory params = "";
         uint16 referralCode = 0;

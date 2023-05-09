@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { useSigner, useContract } from "wagmi";
 import WETHArtifact from "../abis/WETH.json";
 
-const WETH_ADDRESS = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
+const WETH_ADDRESS = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
 const WETH_DECIMALS = 18;
 
 const useWETH = () => {
