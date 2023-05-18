@@ -40,7 +40,7 @@ command:
 
 command:
 
-    ts-node scripts/mempool.ts
+    ts-node scripts/mempool-mon.ts
 * In a new terminal and run the below command from the root folder to start the universial decode api. 
 
 command:
